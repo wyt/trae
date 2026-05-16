@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - 社交网络</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .user-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .follow-status {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn-follow {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-unfollow {
+            background: #e0e0e0;
+            color: #666;
+        }
+        .btn-chat {
+            background: #10b981;
+            color: white;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>社交网络</h1>
+        <div class="header-right">
+            <div class="user-info">
+                <span>欢迎，<span th:text="${currentUser.username}"></span></span>
+            </div>
+            <a href="/logout" class="logout-btn">退出</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
+        <h2 class="section-title">用户列表</h2>
+        
+        <div th:if="${users.isEmpty()}" class="empty-state">
+            暂无其他用户
+        </div>
+        
+        <div class="user-list" th:unless="${users.isEmpty()}">
+            <div class="user-card" th:each="user : ${users}">
+                <div class="user-info-card">
+                    <div class="avatar" th:text="${user.username.substring(0,1).toUpperCase()}"></div>
+                    <div>
+                        <div class="user-name" th:text="${user.username}"></div>
+                        <div class="follow-status">
+                            <span th:if="${followService.isFollowing(currentUser.id, user.id)}">已关注</span>
+                            <span th:if="${followService.isMutualFollow(currentUser.id, user.id)}"> • 互相关注</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <form th:action="@{/follow/{id}(id=${user.id})}" method="post" 
+                          th:if="${!followService.isFollowing(currentUser.id, user.id)}">
+                        <button type="submit" class="btn btn-follow">关注</button>
+                    </form>
+                    <form th:action="@{/unfollow/{id}(id=${user.id})}" method="post" 
+                          th:if="${followService.isFollowing(currentUser.id, user.id)}">
+                        <button type="submit" class="btn btn-unfollow">取消关注</button>
+                    </form>
+                    <a th:href="@{/chat/{id}(id=${user.id})}" class="btn btn-chat"
+                       th:classappend="${followService.isMutualFollow(currentUser.id, user.id)} ? '' : 'btn'">
+                        聊天
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
