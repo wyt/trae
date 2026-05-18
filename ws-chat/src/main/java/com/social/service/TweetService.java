@@ -49,7 +49,7 @@ public class TweetService {
         following.add(userService.findById(userId));
         List<Long> userIds = following.stream()
                 .map(User::getId)
-                .toList();
+                .collect(Collectors.toList());
         return tweetRepository.findByUserIdInOrderByCreatedAtDesc(userIds);
     }
 
