@@ -97,7 +97,7 @@ public class TweetController {
         }
         String referer = session.getAttribute("referer") != null ? 
                          session.getAttribute("referer").toString() : "/timeline";
-        return "redirect" + referer;
+        return "redirect:" + referer;
     }
 
     @PostMapping("/tweet/delete/{tweetId}")
