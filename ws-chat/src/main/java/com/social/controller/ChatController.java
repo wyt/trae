@@ -38,6 +38,13 @@ public class ChatController {
     @Autowired
     private FollowService followService;
 
+    /**
+     * 进入与指定用户的聊天页面
+     * @param userId 聊天对象的用户ID
+     * @param model 视图模型，传递聊天相关数据
+     * @param session Http会话，获取当前登录用户
+     * @return 聊天页面视图，未登录跳转到登录页，非互相关注返回首页
+     */
     @GetMapping("/chat/{userId}")
     public String chatPage(@PathVariable Long userId, Model model, HttpSession session) {
         User currentUser = userService.getCurrentUser(session);
@@ -74,6 +81,11 @@ public class ChatController {
         return "chat";
     }
 
+    /**
+     * 通过WebSocket接收并广播聊天消息
+     * @param message 聊天消息DTO
+     * @return 处理后的消息对象，广播到/topic/messages主题
+     */
     @MessageMapping("/chat")
     @SendTo("/topic/messages")
     public ChatMessageDTO sendMessage(ChatMessageDTO message) {
@@ -93,6 +105,11 @@ public class ChatController {
         }
     }
 
+    /**
+     * 通过HTTP接口发送聊天消息（备用方式）
+     * @param message 聊天消息DTO
+     * @return 处理后的消息对象，并通过WebSocket广播
+     */
     @PostMapping("/api/chat")
     @ResponseBody
     public ChatMessageDTO sendMessageHttp(@RequestBody ChatMessageDTO message) {

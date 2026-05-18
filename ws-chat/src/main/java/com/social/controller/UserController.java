@@ -24,6 +24,12 @@ public class UserController {
     @Autowired
     private FollowService followService;
 
+    /**
+     * 显示用户首页，展示所有可关注的用户列表
+     * @param model 视图模型，传递用户列表和当前用户信息
+     * @param session Http会话，获取当前登录用户
+     * @return 首页视图，未登录跳转到登录页
+     */
     @GetMapping("/home")
     public String home(Model model, HttpSession session) {
         User currentUser = userService.getCurrentUser(session);
@@ -40,6 +46,13 @@ public class UserController {
         return "home";
     }
 
+    /**
+     * 关注指定用户
+     * @param userId 要关注的用户ID
+     * @param session Http会话，获取当前登录用户
+     * @param redirectAttributes 重定向属性，传递操作结果信息
+     * @return 重定向回首页
+     */
     @PostMapping("/follow/{userId}")
     public String follow(@PathVariable Long userId, HttpSession session, 
                          RedirectAttributes redirectAttributes) {
@@ -56,6 +69,13 @@ public class UserController {
         return "redirect:/home";
     }
 
+    /**
+     * 取消关注指定用户
+     * @param userId 要取消关注的用户ID
+     * @param session Http会话，获取当前登录用户
+     * @param redirectAttributes 重定向属性，传递操作结果信息
+     * @return 重定向回首页
+     */
     @PostMapping("/unfollow/{userId}")
     public String unfollow(@PathVariable Long userId, HttpSession session, 
                            RedirectAttributes redirectAttributes) {

@@ -19,16 +19,32 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    /**
+     * 首页访问，重定向到登录页面
+     * @return 登录页面重定向地址
+     */
     @GetMapping("/")
     public String index() {
         return "redirect:/login";
     }
 
+    /**
+     * 显示登录页面
+     * @return 登录页面视图名
+     */
     @GetMapping("/login")
     public String loginPage() {
         return "login";
     }
 
+    /**
+     * 处理用户登录请求
+     * @param username 用户名
+     * @param password 密码
+     * @param session Http会话，用于存储登录用户信息
+     * @param redirectAttributes 重定向属性，用于传递错误信息
+     * @return 登录成功跳转到首页，失败返回登录页
+     */
     @PostMapping("/login")
     public String login(String username, String password, HttpSession session, 
                         RedirectAttributes redirectAttributes) {
@@ -41,12 +57,24 @@ public class AuthController {
         }
     }
 
+    /**
+     * 显示用户注册页面
+     * @param model 视图模型，用于传递空的User对象
+     * @return 注册页面视图名
+     */
     @GetMapping("/register")
     public String registerPage(Model model) {
         model.addAttribute("user", new User());
         return "register";
     }
 
+    /**
+     * 处理用户注册请求
+     * @param user 用户注册信息
+     * @param bindingResult 数据绑定结果，用于表单验证
+     * @param redirectAttributes 重定向属性，用于传递成功/错误信息
+     * @return 注册成功跳转到登录页，失败返回注册页
+     */
     @PostMapping("/register")
     public String register(@Valid User user, BindingResult bindingResult, 
                            RedirectAttributes redirectAttributes) {
@@ -63,6 +91,11 @@ public class AuthController {
         }
     }
 
+    /**
+     * 用户退出登录，清除会话中的用户信息
+     * @param session Http会话
+     * @return 重定向到登录页面
+     */
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         userService.logout(session);
