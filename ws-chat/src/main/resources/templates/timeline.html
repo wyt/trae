@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时间线 - 社交网络</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+        }
+        .header-nav {
+            display: flex;
+            gap: 20px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+        .header-nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .header-nav a.active {
+            background: rgba(255,255,255,0.3);
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .compose-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .compose-header {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .compose-form {
+            flex: 1;
+        }
+        .compose-textarea {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 16px;
+            resize: none;
+            min-height: 100px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .compose-textarea:focus {
+            border-color: #667eea;
+        }
+        .compose-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+        }
+        .char-count {
+            font-size: 14px;
+            color: #666;
+        }
+        .char-count.warning {
+            color: #f59e0b;
+        }
+        .char-count.error {
+            color: #ef4444;
+        }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .timeline-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .tweet-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .tweet-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tweet-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .tweet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .tweet-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .tweet-author:hover .author-name {
+            color: #667eea;
+        }
+        .author-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .author-name {
+            font-weight: 600;
+            color: #333;
+            transition: color 0.2s;
+        }
+        .author-username {
+            font-size: 14px;
+            color: #666;
+        }
+        .tweet-time {
+            font-size: 13px;
+            color: #999;
+        }
+        .tweet-content {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .tweet-actions {
+            display: flex;
+            gap: 20px;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 12px;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background: #f0f0f0;
+        }
+        .action-btn.delete:hover {
+            background: #fee;
+            color: #ef4444;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .empty-state p {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>社交网络</h1>
+        <nav class="header-nav">
+            <a href="/home">首页</a>
+            <a href="/timeline" class="active">时间线</a>
+            <a href="/profile">我的主页</a>
+        </nav>
+        <div class="header-right">
+            <span>欢迎，<span th:text="${currentUser.username}"></span></span>
+            <a href="/logout" class="logout-btn">退出</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <div class="compose-box">
+            <div class="compose-header">
+                <div class="avatar" th:text="${currentUser.username.substring(0,1).toUpperCase()}"></div>
+                <form class="compose-form" th:action="@{/tweet}" method="post">
+                    <textarea 
+                        class="compose-textarea" 
+                        name="content" 
+                        id="tweetContent"
+                        placeholder="有什么新鲜事？"
+                        maxlength="280"
+                        oninput="updateCharCount(this)"
+                    ></textarea>
+                    <div class="compose-footer">
+                        <span class="char-count" id="charCount">0 / 280</span>
+                        <button type="submit" class="btn btn-primary" id="tweetBtn">发布推文</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <h2 class="timeline-title">时间线</h2>
+
+        <div th:if="${tweets.isEmpty()}" class="empty-state">
+            <h3>暂无推文</h3>
+            <p>关注其他用户，查看他们的推文，或发布你的第一条推文！</p>
+        </div>
+
+        <div class="tweet-list" th:unless="${tweets.isEmpty()}">
+            <div class="tweet-card" th:each="tweet : ${tweets}">
+                <div class="tweet-header">
+                    <a th:href="@{/profile/{id}(id=${tweet.user.id})}" class="tweet-author">
+                        <div class="avatar" th:text="${tweet.user.username.substring(0,1).toUpperCase()}"></div>
+                        <div class="author-info">
+                            <span class="author-name" th:text="${tweet.user.username}"></span>
+                            <span class="author-username">@<span th:text="${tweet.user.username}"></span></span>
+                        </div>
+                    </a>
+                    <span class="tweet-time" th:text="${#temporals.format(tweet.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                </div>
+                <div class="tweet-content" th:text="${tweet.content}"></div>
+                <div class="tweet-actions" th:if="${tweet.user.id == currentUser.id}">
+                    <form th:action="@{/tweet/delete/{id}(id=${tweet.id})}" method="post">
+                        <button type="submit" class="action-btn delete" onclick="return confirm('确定要删除这条推文吗？');">
+                            🗑️ 删除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateCharCount(textarea) {
+            const count = textarea.value.length;
+            const charCount = document.getElementById('charCount');
+            const tweetBtn = document.getElementById('tweetBtn');
+            
+            charCount.textContent = count + ' / 280';
+            
+            if (count > 260) {
+                charCount.className = 'char-count warning';
+            } else if (count > 280) {
+                charCount.className = 'char-count error';
+            } else {
+                charCount.className = 'char-count';
+            }
+            
+            tweetBtn.disabled = count === 0 || count > 280;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('tweetContent');
+            updateCharCount(textarea);
+        });
+    </script>
+</body>
+</html>

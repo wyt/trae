@@ -25,6 +25,23 @@
         .header h1 {
             font-size: 24px;
         }
+        .header-nav {
+            display: flex;
+            gap: 20px;
+        }
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+        .header-nav a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .header-nav a.active {
+            background: rgba(255,255,255,0.3);
+        }
         .header-right {
             display: flex;
             align-items: center;
@@ -148,6 +165,11 @@
 <body>
     <div class="header">
         <h1>社交网络</h1>
+        <nav class="header-nav">
+            <a href="/home" class="active">首页</a>
+            <a href="/timeline">时间线</a>
+            <a href="/profile">我的主页</a>
+        </nav>
         <div class="header-right">
             <div class="user-info">
                 <span>欢迎，<span th:text="${currentUser.username}"></span></span>
